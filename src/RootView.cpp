@@ -269,6 +269,11 @@ void MyMainFrame::SaveConfig() {
  *Oddly, TCut objects can't be identified with IsA(), making them virtually undrawable...
  */
 void MyMainFrame::DoDraw() {
+  draw->SetState(kButtonDisabled);
+  stpstr->SetState(kButtonDisabled);
+  load->SetState(kButtonDisabled);
+  save->SetState(kButtonDisabled);
+  clear->SetState(kButtonDisabled);
   for(int i=1; i<nPads+1; i++) {
     fC1->cd(i);
     try {
@@ -294,6 +299,11 @@ void MyMainFrame::DoDraw() {
       fC1->Update();
     } catch (out_of_range& oor) {cout<<"blep"<<endl;}
   }
+  draw->SetState(kButtonUp);
+  stpstr->SetState(kButtonUp);
+  load->SetState(kButtonUp);
+  save->SetState(kButtonUp);
+  clear->SetState(kButtonUp);
 }
 
 /*DoClear()
