@@ -1,0 +1,6 @@
+--------------------Variables--------------------
+Float_t t
+--------------------Histograms--------------------
+Type HistoName VarX VarY BinsX MinX MaxX BinsY MinY MaxY Cut
+TH1F histo t n/a 10 0 10 0 0 0 n/a
+-----------------------Cuts-----------------------

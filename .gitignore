@@ -1,0 +1,13 @@
+###FILE TYPES###
+*.pcm
+*.txt
+*.swp
+*.o
+*.cxx
+
+###EXE###
+RootView
+
+###KEEP THIS###
+!.gitignore
+!input.txt
