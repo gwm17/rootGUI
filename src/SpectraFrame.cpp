@@ -1,9 +1,16 @@
+/*SpectraFrame.h
+ *Frame which prompts user for necessary info to make a new spectrum.
+ *Overwrites are allowed. A single premade cut may be applied
+ *
+ *Gordon M. Oct 2019
+ */
 #include "SpectraFrame.h"
 #include <TGLabel.h>
 #include <TTimer.h>
 
 using namespace std;
 
+//histogram switches
 enum histos {
   BLANK,
   TYPE_1F,
@@ -23,6 +30,7 @@ enum histos {
   V2BINS_ID
 };
 
+//Constructor
 SpectraFrame::SpectraFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                            MyMainFrame *parent, vector<string> vars, vector<string> cuts) {
   fMain = new TGTransientFrame(p,main,w,h);
@@ -59,6 +67,7 @@ SpectraFrame::SpectraFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UI
   titleframe->AddFrame(tl, basic_hints);
   titleframe->AddFrame(TitleBox, basic_hints);
 
+  //Options will be disabled until user chooses a type of histogram
   TGVerticalFrame *var1frame = new TGVerticalFrame(h1, w*0.2, h*0.25);
   TGLabel *v1l = new TGLabel(var1frame, "Variable X");
   Var1 = new TGComboBox(var1frame, VAR1_ID);
@@ -195,6 +204,7 @@ SpectraFrame::SpectraFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UI
   fMain->MapWindow();
 }
 
+//Destructor
 SpectraFrame::~SpectraFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -207,6 +217,7 @@ void SpectraFrame::CloseWindow() {
 void SpectraFrame::DoOk() {
   OkButton->SetState(kButtonDisabled);
   CancelButton->SetState(kButtonDisabled);
+  //format to a way MainFrame can handle
   if(htype == TYPE_1F || htype == TYPE_1I) {
     const char *n = TitleBox->GetText();
     const char *t = HistoType->GetSelectedEntry()->GetTitle();
@@ -236,15 +247,18 @@ void SpectraFrame::DoOk() {
     strcpy(cut, c);
     Send2DSpectrum(type,name,varx,vary,minx,miny,maxx,maxy,binsx,binsy,cut);
   }
+  //Delay a short time and then close
   TTimer::SingleShot(150,"SpectraFrame",this,"CloseWindow()");
 }
 
 void SpectraFrame::DoCancel() {
   OkButton->SetState(kButtonDisabled);
   CancelButton->SetState(kButtonDisabled);
+  //Delay a short time and then close
   TTimer::SingleShot(150,"SpectraFrame",this,"CloseWindow()");
 }
 
+//enable options based on type of histogram chosen
 void SpectraFrame::SetOptions(Int_t box_id, Int_t type) {
   if(box_id != HTYPE_ID) return;
   htype = type;
@@ -273,6 +287,8 @@ void SpectraFrame::SetOptions(Int_t box_id, Int_t type) {
   }
 }
 
+//User must enter a certain number of signals to guarantee enough info
+//to make a histogram
 void SpectraFrame::Signaled() {
   recieved_signals++;
   if(recieved_signals>=required_signals) {
@@ -284,12 +300,12 @@ void SpectraFrame::Send2DSpectrum(char* type, char* name, char* varx, char* vary
                                   Float_t minx, Float_t miny, Float_t maxx, Float_t maxy,
                                   Int_t binsx, Int_t binsy, char* cut) { 
   EmitVA<char*,char*,char*,char*,Float_t,Float_t,Float_t,Float_t,Int_t,Int_t,char*>
-        ("Send2DSpectrum(char*,char*,char*,char*,Float_t,Float_t,Float_t,Float_t,Int_t,Int_t,char*)",11,type,name,varx,vary,minx,miny,maxx,maxy,binsx,binsy,cut);
+        ("Send2DSpectrum(char*,char*,char*,char*,Float_t,Float_t,Float_t,Float_t,Int_t,Int_t,char*)",11,type,name,varx,vary,minx,miny,maxx,maxy,binsx,binsy,cut); //gross
 }
 
 void SpectraFrame::Send1DSpectrum(char* type, char* name, char* varx, Float_t minx,
                                   Float_t maxx, Int_t binsx, char* cut) {
   EmitVA<char*,char*,char*,Float_t,Float_t,Int_t,char*>
         ("Send1DSpectrum(char*,char*,char*,Float_t,Float_t,Int_t,char*)",
-         7,type,name,varx,minx,maxx,binsx,cut);
+         7,type,name,varx,minx,maxx,binsx,cut); //gross
 }

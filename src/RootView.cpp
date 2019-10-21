@@ -1,3 +1,15 @@
+/*RootView.cpp
+ *Makes a main frame for the RootView GUI called MyMainFrame
+ *Does a whole bunch of fun stuff, most of which is outlined in
+ *https://root.cern.ch/root/htmldoc/guides/users-guide/WritingGUI.html and
+ *https://root.cern/doc/master/guitest_8C.html and
+ *https://pep-root6.github.io/docs/analysis/parallell/root.html (for threading).
+ *Still work in progress, let me know at gmccann@fsu.edu if you find any room for improvement
+ *(there definitely is)
+ *
+ *Gordon M. Oct 2019
+ */
+
 #include "RootView.h"
 #include "OlineSrcFrame.h"
 #include "FileSrcFrame.h"
@@ -20,6 +32,7 @@
 
 using namespace std;
 
+//ID's for menu choices
 enum rvID {
   M_SOURCE_FILE,
   M_SOURCE_ONLINE,
@@ -29,8 +42,12 @@ enum rvID {
   M_LIST_CUTS
 };
 
+/*MainFrame()
+ *Constructor. Must initialize the structure of the GUI here, and then display the initial
+ *state.
+ */
 MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
-  //Init Main Frame
+  //Init Main Frame along with global params
   fMain = new TGMainFrame(p,w,h);
   fMain->SetCleanup(kDeepCleanup);
   MAIN_H = h;
@@ -38,6 +55,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   take_me_home = new converter();
   rows = 1;
   columns = 1;
+  nPads = 1;
 
   //Init single canvas
   TGHorizontalFrame *hcanv = new TGHorizontalFrame(fMain, w,(h*0.75));
@@ -47,7 +65,6 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   fC1 = fECanvas->GetCanvas();
   fC1->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","MyMainFrame",this,
                "HandleCanvas(Int_t,Int_t,Int_t,TObject*)");
-  nPads = 1;
   status = new TGStatusBar(v3, w*0.5, h*0.1, kHorizontalFrame);
   Int_t parts[] = {45,15,10,30};
   status->SetParts(parts, 4);
@@ -62,6 +79,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   TGVerticalFrame *v2 = new TGVerticalFrame(hspec,0.25*w,0.75*h);
   TGLayoutHints *entry_hints = new TGLayoutHints(kLHintsCenterX|kLHintsCenterY,5,5,5,5);
   TGLayoutHints *label_hints = new TGLayoutHints(kLHintsLeft|kLHintsCenterY,5,5,5,5);
+  //Spectrum boxes
   for(int i=0; i<16; i++) {
     if(i<8) {
       spb_labels[i] = new TGLabel(v1, Form("Spectrum %i",i+1));
@@ -80,6 +98,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
     }
     if(i != 0) specboxes[i]->SetEnabled(false);    
   }
+  //Division buttons
   TGButtonGroup *r = new TGButtonGroup(v1, "Rows", kVerticalFrame);
   r1[0] = new TGRadioButton(r, "1", 1);
   r1[1] = new TGRadioButton(r, "2", 2);
@@ -99,14 +118,15 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   c->Connect("Clicked(Int_t)","MyMainFrame",this,"HandleCClick(Int_t)");
   v2->AddFrame(c, entry_hints);
 
+  //Cut buttons
   TGVerticalFrame *vcut = new TGVerticalFrame(hspec, 0.25*w, 0.25*h);
-  TGTextButton *Cut2DButton = new TGTextButton(vcut,"2DCut");
+  Cut2DButton = new TGTextButton(vcut,"2DCut");
   Cut2DButton->Connect("Clicked()","MyMainFrame",this,"Do2DCut()");
-  TGTextButton *Cut1DButton = new TGTextButton(vcut,"1DCut");
+  Cut1DButton = new TGTextButton(vcut,"1DCut");
   Cut1DButton->Connect("Clicked()","MyMainFrame",this,"Do1DCut()");
-  TGTextButton *ComboCutButton = new TGTextButton(vcut, "CombineCuts");
+  ComboCutButton = new TGTextButton(vcut, "CombineCuts");
   ComboCutButton->Connect("Clicked()", "MyMainFrame", this, "DoComboCut()");
-  TGTextButton *ApplyCutButton = new TGTextButton(vcut, "ApplyCut");
+  ApplyCutButton = new TGTextButton(vcut, "ApplyCut");
   ApplyCutButton->Connect("Clicked()", "MyMainFrame", this, "DoApplyCut()");
   vcut->AddFrame(Cut2DButton,entry_hints);
   vcut->AddFrame(Cut1DButton,entry_hints);
@@ -123,16 +143,17 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   TGHorizontalFrame *hframe = new TGHorizontalFrame(fMain,w,h*.15);
   TGLayoutHints *bhints = new TGLayoutHints(kLHintsCenterX|kLHintsCenterY,5,5,3,4);
 
-  TGTextButton *draw = new TGTextButton(hframe,"&Draw");
+  //GUI action buttons
+  draw = new TGTextButton(hframe,"&Draw");
   draw->Connect("Clicked()","MyMainFrame",this,"DoDraw()");
-  TGTextButton *exit = new TGTextButton(hframe, "&Exit", "gApplication->Terminate()");
+  exit = new TGTextButton(hframe, "&Exit", "gApplication->Terminate()");
   stpstr = new TGTextButton(hframe, "&Start");
   stpstr->Connect("Clicked()","MyMainFrame",this,"StopStart()");
-  TGTextButton *load = new TGTextButton(hframe, "&Load");
+  load = new TGTextButton(hframe, "&Load");
   load->Connect("Clicked()","MyMainFrame",this,"LoadConfig()");
-  TGTextButton *save = new TGTextButton(hframe, "&Save");
+  save = new TGTextButton(hframe, "&Save");
   save->Connect("Clicked()","MyMainFrame",this,"SaveConfig()");
-  TGTextButton *clear = new TGTextButton(hframe, "&Clear");
+  clear = new TGTextButton(hframe, "&Clear");
   clear->Connect("Clicked()","MyMainFrame",this,"DoClear()");
 
   hframe->AddFrame(draw, bhints);
@@ -145,7 +166,8 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   //Menu Bar avec menus for init source, saving, histos, etc
   TGMenuBar *fMenuBar = new TGMenuBar(fMain,w,h*0.1, kHorizontalFrame);
   TGLayoutHints *mbItemLayout = new TGLayoutHints(kLHintsTop|kLHintsLeft,0,4,0,0);
-
+  
+  //Menus
   TGPopupMenu *sourceMenu = new TGPopupMenu(gClient->GetRoot());
   sourceMenu->AddEntry("&File",M_SOURCE_FILE);
   sourceMenu->AddEntry("&Online",M_SOURCE_ONLINE);
@@ -165,20 +187,24 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) {
   fMenuBar->AddPopup("&Create",createMenu,mbItemLayout);
 
   //Adding all frames to the Main Frame (order impacts the way they stack)
+  //and build main window
   fMain->AddFrame(fMenuBar);
   fMain->AddFrame(hcanv, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,2,2,2,2));
   fMain->AddFrame(hframe, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-
   fMain->SetWindowName("ROOTView");
   fMain->MapSubwindows();
   fMain->Resize();
   fMain->MapWindow();
 
+  //create thread and associations
   fThread = new TThread("MyThread", ThreadFunc, (void*) this);
 }
 
+/*~MyMainFrame()
+ *Destructor
+ */
 MyMainFrame::~MyMainFrame() {
-  fMain->Cleanup();
+  fMain->Cleanup();//Destroys all associated frames
   delete take_me_home;
   delete fThread;
   delete fMain;
@@ -187,18 +213,28 @@ MyMainFrame::~MyMainFrame() {
   }
 }
 
+/*CloseWindow()
+ *Function called upon atempt to close the window
+ */
 void MyMainFrame::CloseWindow() {
   if(fThread->GetState() == TThread::kRunningState) {
-    fThread->Kill();
+    fThread->Kill();//If window closes & thread going, kill it (saves from zombies & orphans)
     stpstr->SetText("&Start");
     gClient->NeedRedraw(stpstr);
   }
   gApplication->Terminate();
 }
 
+/*ResetContainers()
+ *Function which resets all mapsi and vectors, freeing all currently allocated resources.
+ *For use with loading configurations.
+ */
 void MyMainFrame::ResetContainers() {
   for(unsigned int i=0; i<spectra.size(); i++) {
     delete gROOT->FindObject(spectra[i].c_str());
+  }
+  for(unsigned int i=0; i<cuts.size(); i++) {
+    delete clist[cuts[i]];
   }
   spectra.resize(0);
   variables.resize(0);
@@ -211,14 +247,27 @@ void MyMainFrame::ResetContainers() {
   clist.clear();
 }
 
+/*LoadConfig()
+ *Brings up window which prompts for a config file name. Links to SetConfig().
+ */
 void MyMainFrame::LoadConfig() {
   new FileConfigFrame(gClient->GetRoot(),fMain,MAIN_W*0.5, MAIN_H*0.5,this,0);
 }
 
+/*SaveConfig()
+ *Brings up window which prompts for a config file name. Links to WriteConfig().
+ */
 void MyMainFrame::SaveConfig() {
   new FileConfigFrame(gClient->GetRoot(),fMain,MAIN_W*0.5,MAIN_H*0.5,this,1);
 }
 
+/*DoDraw()
+ *Function called upon clicking draw button. Cycles through each pad and feeds
+ *information to converter to make histogram, which is returned back to this function.
+ *That returned histogram is then drawn, and stored back into the map. If there is a CutG
+ *associated with the histogram, it is drawn as well (CutG was DRAWN on this histo). 
+ *Oddly, TCut objects can't be identified with IsA(), making them virtually undrawable...
+ */
 void MyMainFrame::DoDraw() {
   for(int i=1; i<nPads+1; i++) {
     fC1->cd(i);
@@ -247,12 +296,19 @@ void MyMainFrame::DoDraw() {
   }
 }
 
+/*DoClear()
+ *Locks the secondary thread, and wipes away the data stored in the 
+ *tree.
+ */
 void MyMainFrame::DoClear() {
   TThread::Lock();
   take_me_home->ClearTree();
   TThread::UnLock();
 }
 
+/*DoMenuPrompt()
+ *Switches menu ids and generates the appropriate window
+ */
 void MyMainFrame::DoMenuPrompt(Int_t id) {
   switch(id) {
     case(M_SOURCE_ONLINE):
@@ -276,6 +332,10 @@ void MyMainFrame::DoMenuPrompt(Int_t id) {
   }
 }
 
+/*SetURI()
+ *Function linked to signal which gives the name of the data source
+ *For NSCLDAQ needs full protocol as well
+ */
 void MyMainFrame::SetURI(char* input_uri) {
   std::string temp(input_uri);
   fURI = temp;
@@ -290,6 +350,10 @@ void MyMainFrame::SetURI(char* input_uri) {
   }
 }
 
+/*SetCanvasDiv()
+ *Divides canvas. Linked to buttons on main frame, along
+ *with the division window buttons
+ */
 void MyMainFrame::SetCanvasDiv(Int_t r, Int_t c) {
   fC1->Clear();
   fC1->Divide(r,c);
@@ -304,10 +368,13 @@ void MyMainFrame::SetCanvasDiv(Int_t r, Int_t c) {
   }
 }
 
+/*SetConfig()
+ *Linked to load config window. Parses config file and initializes storage
+ */
 void MyMainFrame::SetConfig(char* config) {
-  ResetContainers();
+  ResetContainers();//dump anything extant
   std::string temp(config);
-  fConfig = temp;
+  fConfig = temp; //global name 
   ifstream configFile(fConfig);
   if(!configFile.is_open()) {cout<<"Failed to open config file!"<<endl; return;}
   string junk;
@@ -428,9 +495,12 @@ void MyMainFrame::SetConfig(char* config) {
     }
   }
   configFile.close();
-  SetAvailSpectra();
+  SetAvailSpectra(); //fill all of the spectrum boxes
 }
 
+/*WriteConfig()
+ *Linked to save config window. Parses through storage and writes to file
+ */
 void MyMainFrame::WriteConfig(char* config) {
   ofstream outfile(config);
   if(outfile.is_open()) {
@@ -563,6 +633,9 @@ void MyMainFrame::WriteConfig(char* config) {
   }
 }
 
+/*SetAvailSpectra()
+ *Fills up spectrum list boxes
+ */
 void MyMainFrame::SetAvailSpectra() {
   for(int i=0; i<16; i++) {
     specboxes[i]->RemoveAll();
@@ -572,6 +645,9 @@ void MyMainFrame::SetAvailSpectra() {
   }
 }
 
+/*Do*Cut
+ *Linked to appropriate cut button and generates a window
+ */
 void MyMainFrame::Do2DCut() {
   new CutFrame(gClient->GetRoot(), fMain, MAIN_W*0.25, MAIN_H*0.25, this, nPads,1);
 }
@@ -588,11 +664,15 @@ void MyMainFrame::DoApplyCut() {
   new ApplyCutFrame(gClient->GetRoot(), fMain, MAIN_W*0.5, MAIN_H*0.35, this, cuts, spectra);
 }
 
+/*Get2DCut()
+ *Takes info from frame and allows user to make a 2D cut in the selected pad
+ */
 void MyMainFrame::Get2DCut(char* name, Int_t pd) {
-  TCutG *cut = 0;
+  TCutG *cut = 0; //init as NULL
   try {
     fC1->cd(pd);
     const char *p = gPad->GetName();
+    //pull histogram info
     string pname(p);
     if(nPads == 1) pname = "Ecanvas_1";
     string spectrum = pmap.at(pname);
@@ -603,6 +683,7 @@ void MyMainFrame::Get2DCut(char* name, Int_t pd) {
       return;
     }
     string vx, vy, temp="", c;
+    //grab variable info for setting
     for(unsigned int i=0; i<vars.size(); i++) {
       c = vars[i];
       if(c == ":") {
@@ -615,13 +696,14 @@ void MyMainFrame::Get2DCut(char* name, Int_t pd) {
       }
       temp += c;
     }
-    gROOT->SetEditorMode("CutG");
-    cut = (TCutG*) fC1->WaitPrimitive("CUTG", "CutG");
+    gROOT->SetEditorMode("CutG");//Enables the drawing of a CutG
+    cut = (TCutG*) fC1->WaitPrimitive("CUTG", "CutG"); //Grabs first cut created
     cut->SetName(name);
     cut->SetVarX(vx.c_str());
     cut->SetVarY(vy.c_str());
     cut->SetLineColor(2);
     string n(name);
+    //check to see if this is an overwrite. if so, dont add to list of cuts
     int flag = 0;
     for(unsigned int i=0; i<cuts.size(); i++) {
       if(cuts[i] == n) {
@@ -639,10 +721,14 @@ void MyMainFrame::Get2DCut(char* name, Int_t pd) {
   }
 }
 
+/*Get1DCut()
+ *Takes in info from cut window, and allows user to draw 1D cut
+ */
 void MyMainFrame::Get1DCut(char* name, Int_t pd) {
   try {
     fC1->cd(pd);
     Double_t x1, x2, dx;
+    //get histo info
     const char *p = gPad->GetName();
     string pname(p);
     if(nPads == 1) pname = "Ecanvas_1";
@@ -650,6 +736,7 @@ void MyMainFrame::Get1DCut(char* name, Int_t pd) {
     auto hist_info = hmap.at(spectrum);
     string vars = hist_info.second[0];
     string vx, temp="",c;
+    //grab variable
     for(unsigned int i=0; i<vars.size(); i++) {
       c = vars[i];
       if(c == ">") {
@@ -660,6 +747,7 @@ void MyMainFrame::Get1DCut(char* name, Int_t pd) {
       }
     }
     TH1* h = (TH1*) hist_info.first;
+    //really imperfect way of drawing a 1D cut... currently not replicable at draw
     Double_t ymax = h->GetYaxis()->GetXmax();
     fC1->WaitPrimitive();
     x1 = clickedX;
@@ -675,11 +763,13 @@ void MyMainFrame::Get1DCut(char* name, Int_t pd) {
     TLine *l2 = new TLine(x2,0,x2,ymax);
     l2->SetLineColor(2);
     l2->Draw();
+    //make sure ordering is proper
     if(x2<x1) swap(x1, x2);
     string cstr = vx+">"+to_string(x1)+" && "+vx+"<"+to_string(x2);
     TCut *cut = new TCut(name, cstr.c_str());
     string n(name);
     int flag = 0;
+    //check if overwrite. if so, dont add to cut list
     for(unsigned int i=0; i<cuts.size(); i++) {
       if(cuts[i] == n) {
         flag = 1;
@@ -695,10 +785,14 @@ void MyMainFrame::Get1DCut(char* name, Int_t pd) {
   }
 }
 
+/*GetComboCut
+ *Gets cut info from frame, and then makes a new TCut
+ */
 void MyMainFrame::GetComboCut(char *name, char *title) {
   TCut *cut = new TCut(name, title);
   string n(name);
   int flag = 0;
+  //check if overwrite. if so dont add to cut list
   for(unsigned int i=0; i<cuts.size(); i++) {
     if(cuts[i] == n) {
       flag = 1;
@@ -711,16 +805,23 @@ void MyMainFrame::GetComboCut(char *name, char *title) {
   cmap[name] = "n/a";
 }
 
+/*ApplyCut()
+ *Gets info from frame, and applies cut to the spectrum
+ */
 void MyMainFrame::ApplyCut(char *sname, char *cname) {
   string spectrum(sname); string cut(cname);
   auto info = hmap[spectrum];
   info.second[1] = cut;
 }
 
+/*Add1DSpectrum()
+ *Gets histo info from frame and makes a new one. Creates/overwrites
+ */
 void MyMainFrame::Add1DSpectrum(char* type, char* name, char* varx, Float_t minx,
                                 Float_t maxx, Int_t binsx, char* cut) {
   string title(name);
   int flag = 0;
+  //if overwrite, dont add to histogram list
   for(unsigned int i=0; i<spectra.size(); i++) {
     if(spectra[i] == title) {
       flag = 1;
@@ -745,14 +846,18 @@ void MyMainFrame::Add1DSpectrum(char* type, char* name, char* varx, Float_t minx
     auto set = make_pair(h, cmds);
     hmap[title] = set;
   }
-  SetAvailSpectra();
+  SetAvailSpectra(); //update list boxes
 }
 
+/*Add2DSpectrum()
+ *Gets histo info from frame and makes a new one. Creates/overwrites
+ */
 void MyMainFrame::Add2DSpectrum(char* type, char* name, char* varx, char* vary,
                                 Float_t minx, Float_t miny, Float_t maxx, Float_t maxy,
                                 Int_t binsx, Int_t binsy, char* cut) {
   string title(name);
   int flag = 0;
+  //if overwrite, dont add to histogram list
   for(unsigned int i=0; i<spectra.size(); i++) {
     if(spectra[i] == title) {
       flag = 1;
@@ -776,43 +881,60 @@ void MyMainFrame::Add2DSpectrum(char* type, char* name, char* varx, char* vary,
     auto set = make_pair(h, cmds);
     hmap[title] = set;
   }
-  SetAvailSpectra();
+  SetAvailSpectra(); //update list boxes
 }
 
+/*SetPad()
+ *maps pads to spectra
+ */
 void MyMainFrame::SetPad(Int_t spb_id, Int_t spec_id) {
   string spectrum = spectra[spec_id];
   string pname = "Ecanvas_"+to_string(spb_id);
   pmap[pname] = spectrum;
 }
 
+/*StopStart()
+ *Function that initializes conversion... currently buttoned. Connect differently later
+ */
 void MyMainFrame::StopStart() {
   if(fThread->GetState() == TThread::kRunningState) {
-    fThread->Kill();
+    fThread->Kill(); //if stop and its running, kill it
     stpstr->SetText("&Start");
   } else {
-    fThread->Run(this);
-    fThread->SetCancelAsynchronous();
+    fThread->Run(this); //if start, run it in this frame
+    fThread->SetCancelAsynchronous(); // Good luck
     stpstr->SetText("&Stop");
   }
   gClient->NeedRedraw(stpstr);
 }
 
+/*ThreadFunc()
+ *Function acted by the secondary thread
+ *This is where users will potentially need to make changes
+ */
 void *MyMainFrame::ThreadFunc(void *ptr) {
   MyMainFrame *main = (MyMainFrame*) ptr;
-  if(!main) return 0;
-  TThread *thread = main->GetThread();
-  converter *conv = main->GetConverter();
+  if(!main) return 0;  //Yikes
+  TThread *thread = main->GetThread();  //grab thread
+  converter *conv = main->GetConverter(); //grab converter
   if(!thread || !conv) return 0;
-  while(true) {
+  //this loop probably needs condition where converter gives feedback to if data stream is
+  //closed
+  while(true) { //inf data stream loop
+    //if state change, switch it
     if(thread && thread->GetState() != TThread::kRunningState) break;
     if(conv) {
+      //do this
       conv->run();
     }
-    gSystem->Sleep(100);
+    gSystem->Sleep(100); //I think only necessary for testing where data rate is real low
   }
   return ptr;
 }
 
+/*HandleCanvas()
+ *Does heavy lifting of canvas info bar
+ */
 void MyMainFrame::HandleCanvas(Int_t event, Int_t x, Int_t y, TObject* selected) {
   const char *text1, *text2, *text4;
   char text3[50];
@@ -834,12 +956,18 @@ void MyMainFrame::HandleCanvas(Int_t event, Int_t x, Int_t y, TObject* selected)
   status->SetText(text4,3);
 }
 
+/*example()
+ *Generates main frame
+ */
 void example() {
   UInt_t width = 2000;
   UInt_t height = 1000;
   new MyMainFrame(gClient->GetRoot(),width,height);
 }
 
+/*main()
+ *run it
+ */
 int main(int argc, char **argv) {
   TApplication app("app", &argc, argv);
   example();

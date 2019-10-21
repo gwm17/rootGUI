@@ -1,3 +1,15 @@
+/*RootView.h
+ *Makes a main frame for the RootView GUI called MyMainFrame
+ *Does a whole bunch of fun stuff, most of which is outlined in
+ *https://root.cern.ch/root/htmldoc/guides/users-guide/WritingGUI.html and
+ *https://root.cern/doc/master/guitest_8C.html and
+ *https://pep-root6.github.io/docs/analysis/parallell/root.html (for threading).
+ *Still work in progress, let me know at gmccann@fsu.edu if you find any room for improvement
+ *(there definitely is)
+ *
+ *Gordon M. Oct 2019
+ */
+
 #ifndef ROOTVIEW_H
 #define ROOTVIEW_H
 
@@ -27,13 +39,17 @@
 using namespace std;
 
 class MyMainFrame {
-  
+
+  /*Add to list of graphical objects*/  
   RQ_OBJECT("MyMainFrame");
 
   public:
+    /*Basic class operations*/
     MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h);
     virtual ~MyMainFrame();
     void CloseWindow();
+
+    /*Functions of config, draw, reset, etc*/
     void DoDraw();
     void DoClear();
     void ResetContainers();
@@ -61,42 +77,56 @@ class MyMainFrame {
     void SetPad(Int_t spb_id, Int_t spec_id);
     void StopStart();
     void HandleCanvas(Int_t event, Int_t x, Int_t y, TObject* selected);
-    static void* ThreadFunc(void *ptr);
+
+    /*Threading function*/
+    static void* ThreadFunc(void *ptr); //Must be of this format
+
+    /*Access functions*/
     TThread* GetThread() {return fThread;};
     TCanvas* GetCanvas() {return fC1;};
     converter* GetConverter() {return take_me_home;};
     TObject* GetCut(const char *name) {string n(name); return clist[n];};
+
+    /*Define class for ROOT*/
     ClassDef(MyMainFrame, 0);
 
   private:
+    /*ROOT secondary thread*/
+    TThread *fThread; //If only to be used offline, not needed
+
+    /*ROOT Objects*/
     TRootEmbeddedCanvas *fECanvas;
     TCanvas *fC1;
-    TH1F *fh1;
-    TH1F *fh2;
-    TThread *fThread;
     TGMainFrame *fMain;
-    TGTextButton *stpstr;
-    vector<string> spectra;
-    vector<string> variables;
-    vector<pair<string,string>> var_defs;
-    vector<string> cuts;
+    TGTextButton *stpstr, *draw, *exit, *load, *save, *clear;
+    TGTextButton *Cut2DButton, *Cut1DButton, *ComboCutButton, *ApplyCutButton;
     TGComboBox *specboxes[16];
     TGLabel *spb_labels[16];
     TGStatusBar* status;
     TGRadioButton *r1[4], *r2[4];
-    converter *take_me_home;
-    unordered_map<string, pair<TObject*,vector<string>>> hmap;
-    unordered_map<string, string> pmap;
-    unordered_map<string, string> cmap;
-    unordered_map<string, TObject*> clist;
-    string fURI;
-    string fConfig;
-    UInt_t MAIN_H;
-    UInt_t MAIN_W;
-    Bool_t kActive;
-    Int_t nPads;
-    Int_t clickedX, clickedY;
-    Int_t rows, columns;
+
+    /*Converter*/
+    converter *take_me_home; //VITAL
+
+    /*Storage*/
+    vector<string> spectra; //spectrum names
+    vector<string> variables; //variable names
+    vector<pair<string,string>> var_defs; //variable types with variable names
+    vector<string> cuts; //cut names
+    unordered_map<string, pair<TObject*,vector<string>>> hmap; //name to histo info
+    unordered_map<string, string> pmap; //pad name to histogram name
+    unordered_map<string, string> cmap; //cut name to histogram name
+    unordered_map<string, TObject*> clist; //cut name to cut object
+
+    /*class wide flags and variables*/
+    string fURI; //name with protocol for data input
+    string fConfig; //name of configuration fle
+    UInt_t MAIN_H; //height of main frame
+    UInt_t MAIN_W; //width of main frame
+    Bool_t kActive; //flags state of secondary thread
+    Int_t nPads; //global number of pads
+    Int_t clickedX, clickedY; //global pad location
+    Int_t rows, columns; //canvas divisions
 
 };
 

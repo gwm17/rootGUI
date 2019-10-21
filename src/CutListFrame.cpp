@@ -1,9 +1,15 @@
+/*CutListFrame.h
+ *Frame which lists all cuts for the user and shows associated spectrum
+ *
+ *Gordon M. Oct 2019
+ */
 #include "CutListFrame.h"
 #include <TTimer.h>
 #include <stdexcept>
 
 using namespace std;
 
+//Constructor
 CutListFrame::CutListFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                            MyMainFrame *parent, vector<string> cuts, 
                            unordered_map<string, string> cmap) {
@@ -47,6 +53,7 @@ CutListFrame::CutListFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UI
 
 }
 
+//Destructor
 CutListFrame::~CutListFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -59,12 +66,14 @@ void CutListFrame::CloseWindow() {
 void CutListFrame::DoOk() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //Wait a breif period then close
   TTimer::SingleShot(150,"CutListFrame",this,"CloseWindow()");
 }
 
 void CutListFrame::DoCancel() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //Wait a breif period then close
   TTimer::SingleShot(150,"CutListFrame",this,"CloseWindow()");
 }
 

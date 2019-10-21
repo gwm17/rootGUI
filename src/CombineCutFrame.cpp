@@ -1,3 +1,9 @@
+/*CombineCutFrame.cpp
+ *Frame which allows user to combine multiple prexisiting cuts into a single cut
+ *with AND, OR, and NOT options.
+ *
+ *Gordon M. Oct 2019
+ */
 #include "CombineCutFrame.h"
 #include <TTimer.h>
 #include <TGTextBuffer.h>
@@ -8,6 +14,7 @@
 
 using namespace std;
 
+//Constructor
 CombineCutFrame::CombineCutFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                                  MyMainFrame *parent, vector<string> cuts) {
   fMain = new TGTransientFrame(p,main,w,h);
@@ -78,6 +85,7 @@ CombineCutFrame::CombineCutFrame(const TGWindow *p, const TGWindow *main, UInt_t
   fMain->MapWindow();
 }
 
+//Destructor
 CombineCutFrame::~CombineCutFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -95,15 +103,18 @@ void CombineCutFrame::DoOk() {
   char i[200];
   strcpy(i, CutInfo->GetText());
   SendCut(n, i);
+  //Waits a breif period then closes window
   TTimer::SingleShot(150,"CombineCutFrame",this,"CloseWindow()");
 }
 
 void CombineCutFrame::DoCancel() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //Waits a breif period then closes window
   TTimer::SingleShot(150,"CombineCutFrame",this,"CloseWindow()");
 }
 
+//Adds a selected cut to the list
 void CombineCutFrame::AddCut(TGListTreeItem *item, Int_t btn) {
   string tc(item->GetText());
   selectedCuts.push_back(tc);
@@ -127,6 +138,7 @@ void CombineCutFrame::AddCut(TGListTreeItem *item, Int_t btn) {
   CutInfo->SetText(new_info.c_str());
 }
 
+//Removes previous selection
 void CombineCutFrame::RemoveCut() {
   vector<string> new_list;
   string new_info = "";
@@ -150,6 +162,7 @@ void CombineCutFrame::RemoveCut() {
   CutInfo->SetText(new_info.c_str());
 }
 
+//pick type
 void CombineCutFrame::SetType(Int_t id) {
   switch(id) {
     case AND:
@@ -165,5 +178,5 @@ void CombineCutFrame::SetType(Int_t id) {
 }
 
 void CombineCutFrame::SendCut(char *name, char *cut) {
-  EmitVA<char*, char*>("SendCut(char*,char*)",2,name,cut);
+  EmitVA<char*, char*>("SendCut(char*,char*)",2,name,cut); //send it
 }

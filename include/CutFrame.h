@@ -1,3 +1,9 @@
+/*CutFrame.h
+ *Frame which prompts user for information necessary to make a cut.
+ *Used for both 1D (TCut) and 2D (TCutG) cuts. Overwrites allowed
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef CUTFRAME_H
 #define CUTFRAME_H
 

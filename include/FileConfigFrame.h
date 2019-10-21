@@ -1,3 +1,9 @@
+/*FileConfigFrame.h
+ *Frame which prompts user for a configuration file of type .txt
+ *Name can be given through file selector or through manual entry of full path
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef FILE_CONFIG_FRAME_H
 #define FILE_CONFIG_FRAME_H
 

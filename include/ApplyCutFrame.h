@@ -1,3 +1,8 @@
+/*ApplyCutFrame.h
+ *Frame which allows user to apply a prexisting cut to a prexisting histogram
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef APPLY_CUT_FRAME
 #define APPLY_CUT_FRAME
 

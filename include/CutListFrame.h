@@ -1,3 +1,8 @@
+/*CutListFrame.h
+ *Frame which lists all cuts for the user and shows associated spectrum
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef CUT_LIST_FRAME_H
 #define CUT_LIST_FRAME_H
 

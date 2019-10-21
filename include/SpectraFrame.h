@@ -1,3 +1,9 @@
+/*SpectraFrame.h
+ *Frame which prompts user for necessary info to make a new spectrum.
+ *Overwrites are allowed. A single premade cut may be applied
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef SPECTRAFRAME_H
 #define SPECTRAFRAME_H
 

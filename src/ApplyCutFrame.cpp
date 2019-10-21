@@ -1,3 +1,8 @@
+/*ApplyCutFrame.h
+ *Frame which allows user to apply a prexisting cut to a prexisting histogram
+ *
+ *Gordon M. Oct 2019
+ */
 #include "ApplyCutFrame.h"
 #include <TTimer.h>
 
@@ -8,6 +13,7 @@ enum boxes {
   S
 };
 
+//Constructor
 ApplyCutFrame::ApplyCutFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                              MyMainFrame *parent, vector<string> cuts, vector<string> spectra){
 
@@ -57,6 +63,7 @@ ApplyCutFrame::ApplyCutFrame(const TGWindow *p, const TGWindow *main, UInt_t w, 
   fMain->MapWindow();
 }
 
+//Destructor
 ApplyCutFrame::~ApplyCutFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -74,15 +81,18 @@ void ApplyCutFrame::DoOk() {
   char sname[50], cname[50];
   strcpy(sname, sn); strcpy(cname, cn);
   SendName(sname, cname);
+  //Waits and then closes frame
   TTimer::SingleShot(150,"ApplyCutFrame",this,"CloseWindow()");
 }
 
 void ApplyCutFrame::DoCancel() {
   OkButton->SetState(kButtonDisabled);
   CancelButton->SetState(kButtonDisabled);
+  //Waits and then closes frame
   TTimer::SingleShot(150,"ApplyCutFrame",this,"CloseWindow()");
 }
 
+//requires a certain number of signals from user
 void ApplyCutFrame::Signaled(Int_t box_id, Int_t entry_id) {
   switch(box_id) {
     case C:
@@ -98,5 +108,5 @@ void ApplyCutFrame::Signaled(Int_t box_id, Int_t entry_id) {
 }
 
 void ApplyCutFrame::SendName(char *sname, char *cname) {
-  EmitVA<char*,char*>("SendName(char*,char*)",2,sname,cname);
+  EmitVA<char*,char*>("SendName(char*,char*)",2,sname,cname); //send it
 }

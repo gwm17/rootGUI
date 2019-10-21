@@ -1,3 +1,9 @@
+/*FileConfigFrame.h
+ *Frame which prompts user for a configuration file of type .txt
+ *Name can be given through file selector or through manual entry of full path
+ *
+ *Gordon M. Oct 2019
+ */
 #include "FileConfigFrame.h"
 #include <TGClient.h>
 #include <TGTextBuffer.h>
@@ -6,6 +12,7 @@
 
 using namespace std;
 
+//Constructor
 FileConfigFrame::FileConfigFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, MyMainFrame *parent, Int_t save) {
   
   fMain = new TGTransientFrame(p,main,w,h);
@@ -63,6 +70,7 @@ FileConfigFrame::FileConfigFrame(const TGWindow *p, const TGWindow *main, UInt_t
   fMain->Resize();
 }
 
+//Destructor
 FileConfigFrame::~FileConfigFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -75,6 +83,7 @@ void FileConfigFrame::CloseWindow() {
 void FileConfigFrame::DoCancel() {
   fCancelButton->SetState(kButtonDisabled);
   fOkButton->SetState(kButtonDisabled);
+  //Calls close after brief delay
   TTimer::SingleShot(150,"FileConfigFrame",this,"CloseWindow()");
 }
 
@@ -86,9 +95,11 @@ void FileConfigFrame::DoOk() {
   char name[temp.size()+1];
   strcpy(name, temp.c_str());
   SendText(name);
+  //Calls close after brief delay
   TTimer::SingleShot(150,"FileConfigFrame",this,"CloseWindow()");
 }
 
+//Gather and show directory contents
 void FileConfigFrame::DisplayDir(const TString &name) {
   string dir(fContents->GetDirectory());
   dir += "/"; 
@@ -101,9 +112,10 @@ void FileConfigFrame::DisplayDir(const TString &name) {
 }
 
 void FileConfigFrame::SendText(char* text) {
-  Emit("SendText(char*)",text);
+  Emit("SendText(char*)",text); //send it
 }
 
+//Handle double click events
 void FileConfigFrame::DoDoubleClick(TGLVEntry *entry, Int_t id) {
   if(id != kButton1) return;
   

@@ -1,9 +1,16 @@
+/*SpectraListFrame.cpp
+ *Frame which lists all spectra for user and allows user to see spectrum
+ *parameters. Currently does nothing else
+ *
+ *Gordon M. Oct 2019
+ */
 #include "SpectraListFrame.h"
 #include <TTimer.h>
 #include <stdexcept>
 
 using namespace std;
 
+//constructor
 SpectraListFrame::SpectraListFrame(const TGWindow *p, const TGWindow *main, UInt_t w,
                                UInt_t h, MyMainFrame *parent, vector<string> spectra,
                                unordered_map<string,pair<TObject*,vector<string>>> hmap) {
@@ -54,6 +61,7 @@ SpectraListFrame::SpectraListFrame(const TGWindow *p, const TGWindow *main, UInt
   fMain->MapWindow();
 }
 
+//Destructor
 SpectraListFrame::~SpectraListFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -66,12 +74,14 @@ void SpectraListFrame::CloseWindow() {
 void SpectraListFrame::DoOk() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //waits and then closes
   TTimer::SingleShot(150,"SpectraListFrame",this,"CloseWindow()");
 }
 
 void SpectraListFrame::DoCancel() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //waits and then closes
   TTimer::SingleShot(150,"SpectraListFrame",this,"CloseWindow()");
 }
 

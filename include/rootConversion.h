@@ -1,3 +1,9 @@
+/*rootConversion.h
+ *Program which takes in a data source and parses data from that source.
+ *This is where users must make the most changes (hopefully).
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef ROOT_CONVERSION_H
 #define ROOT_CONVERSION_H
 
@@ -21,17 +27,17 @@ class converter {
   public:
     converter();
     ~converter();
-    void run();
-    Bool_t SetSource(string uri);
-    TObject* getHisto(TObject *histo, string name, vector<string> commands);
-    void AddCut(const char *name, TCut cut);
-    void ClearTree();
+    void run(); //REQUIRED
+    Bool_t SetSource(string uri); //REQUIRED
+    TObject* getHisto(TObject *histo, string name, vector<string> commands); //REQUIRED
+    void AddCut(const char *name, TCut cut); //REQUIRED
+    void ClearTree(); //REQUIRED
 
   private:
-    string sURI;
-    TTree *tree;
-    Float_t t;
-    unordered_map<string, TCut> storage;
+    string sURI; //REQUIRED
+    TTree *tree; //REQUIRED
+    Float_t t;  //all variables must be specified here
+    unordered_map<string, TCut> storage; //REQUIRED
 
 };
 

@@ -1,3 +1,9 @@
+/*OlineSrcFrame.h
+ *Frame for selecting an online data source, currently of NSCLDAQ origins.
+ *Signal sent to MyMainFrame
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef OLINE_SRC_FRAME_H
 #define OLINE_SRC_FRAME_H
 

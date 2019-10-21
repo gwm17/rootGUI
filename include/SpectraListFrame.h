@@ -1,3 +1,9 @@
+/*SpectraListFrame.h
+ *Frame which lists all spectra for user and allows user to see spectrum
+ *parameters. Currently does nothing else
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef SPECTRA_LIST_FRAME_H
 #define SPECTRA_LIST_FRAME_H
 

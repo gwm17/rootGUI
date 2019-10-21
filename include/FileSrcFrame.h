@@ -1,3 +1,10 @@
+/*FileSrcFrame.h
+ *Frame which prompts user for a file name for data source, in this case of NSCLDAQ format
+ *(.evt). Takes input either from file selector or by manually typing in the full path
+ *of a file
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef FILE_SRC_FRAME_H
 #define FILE_SRC_FRAME_H
 

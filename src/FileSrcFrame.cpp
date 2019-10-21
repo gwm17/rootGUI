@@ -1,3 +1,10 @@
+/*FileSrcFrame.cpp
+ *Frame which prompts user for a file name for data source, in this case of NSCLDAQ format
+ *(.evt). Takes input either from file selector or by manually typing in the full path
+ *of a file
+ *
+ *Gordon M. Oct 2019
+ */
 #include "FileSrcFrame.h"
 #include <TGClient.h>
 #include <TGTextBuffer.h>
@@ -6,6 +13,7 @@
 
 using namespace std;
 
+//Constructor
 FileSrcFrame::FileSrcFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, MyMainFrame *parent) {
   
   fMain = new TGTransientFrame(p,main,w,h);
@@ -56,6 +64,7 @@ FileSrcFrame::FileSrcFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UI
   fMain->Resize();
 }
 
+//Destructor
 FileSrcFrame::~FileSrcFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -68,6 +77,7 @@ void FileSrcFrame::CloseWindow() {
 void FileSrcFrame::DoCancel() {
   fCancelButton->SetState(kButtonDisabled);
   fOkButton->SetState(kButtonDisabled);
+  //Closes window after breif delay
   TTimer::SingleShot(150,"FileSrcFrame",this,"CloseWindow()");
 }
 
@@ -81,10 +91,12 @@ void FileSrcFrame::DoOk() {
   char uri[u.size()+1];
   strcpy(uri, u.c_str());
   SendText(uri);
+  //Closes window after breif delay
   TTimer::SingleShot(150,"FileSrcFrame",this,"CloseWindow()");
 }
 
 void FileSrcFrame::DisplayDir(const TString &name) {
+  //gather directory contents
   fContents->SetDefaultHeaders();
   fContents->ChangeDirectory(name);
   fContents->DisplayDirectory();
@@ -93,9 +105,10 @@ void FileSrcFrame::DisplayDir(const TString &name) {
 }
 
 void FileSrcFrame::SendText(char* text) {
-  Emit("SendText(char*)",text);
+  Emit("SendText(char*)",text); //send it
 }
 
+//Handles a double click event
 void FileSrcFrame::DoDoubleClick(TGLVEntry *entry, Int_t id) {
   if(id != kButton1) return;
   TString dirname(fContents->GetDirectory()); 

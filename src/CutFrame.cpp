@@ -1,8 +1,15 @@
+/*CutFrame.cpp
+ *Frame which prompts user for information necessary to make a cut.
+ *Used for both 1D (TCut) and 2D (TCutG) cuts. Overwrites allowed
+ *
+ *Gordon M. Oct 2019
+ */
 #include "CutFrame.h"
 #include <TTimer.h>
 
 using namespace std;
 
+//Constructor
 CutFrame::CutFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                    MyMainFrame *parent, Int_t np, Int_t dF) {
   fMain = new TGTransientFrame(p,main,w,h);
@@ -56,6 +63,7 @@ CutFrame::CutFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
   fMain->MapWindow();
 }
 
+//Destructor
 CutFrame::~CutFrame() {
   fMain->Cleanup();
   fMain->DeleteWindow();
@@ -72,15 +80,18 @@ void CutFrame::DoOk() {
   char n[50];
   strcpy(n, name);
   SendCut(n, pad);
+  //Waits breif period and then close window
   TTimer::SingleShot(150,"CutFrame",this,"CloseWindow()");
 }
 
 void CutFrame::DoCancel() {
   CancelButton->SetState(kButtonDisabled);
   OkButton->SetState(kButtonDisabled);
+  //Waits breif period and then close window
   TTimer::SingleShot(150,"CutFrame",this,"CloseWindow()");
 }
 
+//if enough info allow for ok
 void CutFrame::SetPad(Int_t box, Int_t entry) {
   if(box == 0) {
     pad = entry;
@@ -89,5 +100,5 @@ void CutFrame::SetPad(Int_t box, Int_t entry) {
 }
 
 void CutFrame::SendCut(char* text, Int_t p) {
-  EmitVA<char*,Int_t>("SendCut(char*,Int_t)",2,text,p);
+  EmitVA<char*,Int_t>("SendCut(char*,Int_t)",2,text,p); //send it
 }

@@ -1,3 +1,9 @@
+/*DivisonFrame.cpp
+ *
+ *RELIC
+ *
+ *Gordon M. Oct 2019
+ */
 #include "DivisionFrame.h"
 #include <TTimer.h>
 

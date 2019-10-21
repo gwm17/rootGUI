@@ -1,3 +1,9 @@
+/*CombineCutFrame.h
+ *Frame which allows user to combine multiple prexisiting cuts into a single cut
+ *with AND, OR, and NOT options.
+ *
+ *Gordon M. Oct 2019
+ */
 #ifndef COMBO_CUT_FRAME_H
 #define COMBO_CUT_FRAME_H
 
